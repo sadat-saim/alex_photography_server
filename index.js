@@ -55,7 +55,18 @@ async function run() {
       const service = req.body;
       const result = await services.insertOne(service);
       res.status(200).send(result);
-      console.log(service);
+    });
+    app.get("/review", async (req, res) => {
+      const query = req.query;
+      console.log(query);
+      const cursor = reviews.find(query);
+      const result = await cursor.toArray();
+      res.status(200).send(result);
+    });
+    app.delete("/review/:id", async (req, res) => {
+      const query = { _id: ObjectId(req.params.id) };
+      const result = await reviews.deleteOne(query);
+      res.status(200).send(result);
     });
   } finally {
     await client.close();
