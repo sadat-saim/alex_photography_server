@@ -42,7 +42,6 @@ async function run() {
     app.post("/review", async (req, res) => {
       const review = req.body;
       const result = await reviews.insertOne(review);
-      console.log(req.query, req.body);
       res.status(200).send(result);
     });
     app.get("/review/:serviceId", async (req, res) => {
@@ -51,7 +50,12 @@ async function run() {
       const cursor = reviews.find(query);
       const review = await cursor.toArray();
       res.status(200).send(review);
-      console.log(serviceId);
+    });
+    app.post("/services", async (req, res) => {
+      const service = req.body;
+      const result = await services.insertOne(service);
+      res.status(200).send(result);
+      console.log(service);
     });
   } finally {
     await client.close();
