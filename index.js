@@ -19,6 +19,7 @@ async function run() {
   try {
     const database = client.db("alex");
     const services = database.collection("services");
+    const reviews = database.collection("reviews");
     client.connect();
 
     app.get("/", async (req, res) => {
@@ -37,6 +38,20 @@ async function run() {
       const query = { _id: ObjectId(req.params.id) };
       const service = await services.findOne(query);
       res.status(200).send(service);
+    });
+    app.post("/review", async (req, res) => {
+      const review = req.body;
+      const result = await reviews.insertOne(review);
+      console.log(req.query, req.body);
+      res.status(200).send(result);
+    });
+    app.get("/review/:serviceId", async (req, res) => {
+      const serviceId = req.params.serviceId;
+      const query = { serviceId };
+      const cursor = reviews.find(query);
+      const review = await cursor.toArray();
+      res.status(200).send(review);
+      console.log(serviceId);
     });
   } finally {
     await client.close();
