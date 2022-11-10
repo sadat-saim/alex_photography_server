@@ -31,6 +31,7 @@ async function run() {
       });
       res.send({ token });
     });
+    //Limit service by 3
     app.get("/", async (req, res) => {
       const query = {};
       const cursor = services.find(query).limit(3);
@@ -53,6 +54,7 @@ async function run() {
       const result = await reviews.insertOne(review);
       res.status(200).send(result);
     });
+    //Service details page reviews and sorted reviews
     app.get("/review/:serviceId", async (req, res) => {
       const serviceId = req.params.serviceId;
       const query = { serviceId };
