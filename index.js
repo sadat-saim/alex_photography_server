@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
@@ -22,6 +23,14 @@ async function run() {
     const reviews = database.collection("reviews");
     client.connect();
 
+    app.post("/jwt", (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1d",
+      });
+      res.send({ token });
+    });
     app.get("/", async (req, res) => {
       const query = {};
       const cursor = services.find(query).limit(3);
@@ -59,9 +68,23 @@ async function run() {
     app.get("/review", async (req, res) => {
       const query = req.query;
       console.log(query);
-      const cursor = reviews.find(query);
-      const result = await cursor.toArray();
-      res.status(200).send(result);
+      const token = req.headers.authorization.split(" ")[1];
+      jwt.verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET,
+        async (err, decoded) => {
+          if (err) {
+            return res.status(401).send({ error: "unauthorized access" });
+          }
+          console.log(decoded);
+          if (query.email === decoded.user) {
+            const cursor = reviews.find(query);
+            const result = await cursor.toArray();
+            return res.status(200).send(result);
+          }
+          return res.status(403).send({ error: "Invalid access token" });
+        }
+      );
     });
     app.delete("/review/:id", async (req, res) => {
       const query = { _id: ObjectId(req.params.id) };
